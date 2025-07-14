@@ -5,14 +5,18 @@ import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class GameFragment extends Fragment {
 
@@ -21,13 +25,18 @@ public class GameFragment extends Fragment {
     private int guessRows; // number of rows displaying guess Buttons
     private Handler handler; // used to delay loading next flag
     private LinearLayout[] guessLinearLayouts; // rows of answer Buttons
+    private TextView timerTextView;
+    private long startTime;
+    private long totalSecondsElapsed = 0;
+    private boolean isRunning = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_game, container, false);
         System.out.println("onCreateView");
-        handler = new Handler();
+        handler = new Handler(Looper.getMainLooper());
+        timerTextView = view.findViewById(R.id.time);
         guessLinearLayouts = new LinearLayout[3];
         guessLinearLayouts[0] = (LinearLayout) view.findViewById(R.id.row1LinearLayout);
         guessLinearLayouts[1] = (LinearLayout) view.findViewById(R.id.row2LinearLayout);
@@ -50,7 +59,7 @@ public class GameFragment extends Fragment {
         return view; // returns the fragment's view for display
     }
 
-    private  View.OnClickListener resetButtonListener = new View.OnClickListener() {
+    private View.OnClickListener resetButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             resetGame();
@@ -80,12 +89,16 @@ public class GameFragment extends Fragment {
             int valueNumber = numberList.get(Integer.parseInt(numberString) - 1);
             String valueString = String.valueOf(valueNumber);
             guessButton.setText(valueString);
-            
+
             setEnableBox(false);
 
             int numberBoxOpen = getBoxOpen();
             if (numberBoxOpen == numberList.toArray().length) {
-                new AlertDialog.Builder(getActivity()).setMessage(getString(R.string.results))
+                handler.removeCallbacks(timerRunnable); // Dừng Runnable
+                isRunning = false;
+                String message = getString(R.string.results, totalSecondsElapsed);
+
+                new AlertDialog.Builder(getActivity()).setMessage(message)
                         .setPositiveButton(R.string.reset_quiz, ((dialog, which) -> resetGame())).show();
             }
 
@@ -142,6 +155,10 @@ public class GameFragment extends Fragment {
         numberList = genNumberList((guessRows * 3));
         // add 3, 6, or 9 guess Buttons based on the value of guessRows
         closeBox();
+        startTime = System.currentTimeMillis(); // Ghi lại thời gian bắt đầu
+        handler.postDelayed(timerRunnable, 0); // Bắt đầu chạy ngay lập tức
+        timerTextView.setText("00:00");
+        isRunning = true;
     }
 
     private void closeBox() {
@@ -156,7 +173,25 @@ public class GameFragment extends Fragment {
             }
         }
     }
-    private void setEnableBox(boolean status){
+
+    // Runnable để cập nhật UI mỗi giây
+    private Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            totalSecondsElapsed = millis / 1000; // Cập nhật tổng số giây
+
+            int minutes = (int) (totalSecondsElapsed / 60);
+            int seconds = (int) (totalSecondsElapsed % 60);
+
+            timerTextView.setText(String.format(Locale.getDefault(), "Thời gian: %02d:%02d", minutes, seconds));
+
+            // Đặt lịch để Runnable chạy lại sau 1 giây (1000 mili giây)
+            handler.postDelayed(this, 1000);
+        }
+    };
+
+    private void setEnableBox(boolean status) {
         for (int row = 0; row < guessRows; row++) {
             // place Buttons in currentTableRow
             for (int column = 0; column < guessLinearLayouts[row].getChildCount(); column++) {

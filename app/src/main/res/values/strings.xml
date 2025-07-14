@@ -8,5 +8,5 @@
     <string name="settings_activity">Cài đặt trò chơi</string>
     <string name="restarting_quiz">Bắt đầu lại trò chơi</string>
     <string name="reset_quiz">Chơi lại</string>
-    <string name="results">Bạn đã chiến thắng trò chơi</string>
+    <string name="results">Bạn đã chiến thắng trò chơi trong %d giây</string>
 </resources>
