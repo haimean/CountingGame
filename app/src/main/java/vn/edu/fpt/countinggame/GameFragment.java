@@ -28,7 +28,6 @@ public class GameFragment extends Fragment {
     private TextView timerTextView;
     private long startTime;
     private long totalSecondsElapsed = 0;
-    private boolean isRunning = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -95,7 +94,6 @@ public class GameFragment extends Fragment {
             int numberBoxOpen = getBoxOpen();
             if (numberBoxOpen == numberList.toArray().length) {
                 handler.removeCallbacks(timerRunnable); // Dừng Runnable
-                isRunning = false;
                 String message = getString(R.string.results, totalSecondsElapsed);
 
                 new AlertDialog.Builder(getActivity()).setMessage(message)
@@ -153,12 +151,10 @@ public class GameFragment extends Fragment {
 
     public void resetGame() {
         numberList = genNumberList((guessRows * 3));
-        // add 3, 6, or 9 guess Buttons based on the value of guessRows
         closeBox();
         startTime = System.currentTimeMillis(); // Ghi lại thời gian bắt đầu
         handler.postDelayed(timerRunnable, 0); // Bắt đầu chạy ngay lập tức
         timerTextView.setText("00:00");
-        isRunning = true;
     }
 
     private void closeBox() {
