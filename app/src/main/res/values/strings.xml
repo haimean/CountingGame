@@ -7,6 +7,6 @@
     <string name="action_settings">Cài đặt</string>
     <string name="settings_activity">Cài đặt trò chơi</string>
     <string name="restarting_quiz">Bắt đầu lại trò chơi</string>
-    <string name="reset_quiz">Reset Quiz</string>
-    <string name="results">%1$d guesses, %2$.02f%% correct</string>
+    <string name="reset_quiz">Chơi lại</string>
+    <string name="results">Bạn đã chiến thắng trò chơi</string>
 </resources>

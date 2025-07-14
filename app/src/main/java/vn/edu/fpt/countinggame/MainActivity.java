@@ -5,13 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.widget.Toast;
 
@@ -31,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(preferenceChangeListener);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
     }
 
 
@@ -38,11 +36,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if (preferencesChanged) {
-            // now that the default preferences have been set,
-            // initialize QuizFragment and start the quiz
-            GameFragment gameFragment = (GameFragment) getFragmentManager().findFragmentById(R.id.quizFragment);
-            gameFragment.updateGuessRows(PreferenceManager.getDefaultSharedPreferences(this));
-//            gameFragment.resetQuiz();
+            GameFragment gameFragment = (GameFragment)
+                    getFragmentManager().findFragmentById(R.id.quizFragment);
+            gameFragment.updateGuessRows(
+                    PreferenceManager.getDefaultSharedPreferences(this));
+            gameFragment.resetGame();
             preferencesChanged = false;
         }
     } // end method onStart

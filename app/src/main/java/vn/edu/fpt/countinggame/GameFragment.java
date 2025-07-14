@@ -1,196 +1,184 @@
 package vn.edu.fpt.countinggame;
+
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class GameFragment extends Fragment {
 
+    private List<Integer> numberList; // flag file names
 
-    // String used when logging error messages
-    private static final String TAG = "FlagQuiz Activity";
-
-    private static final int FLAGS_IN_QUIZ = 10;
-
-    private List<String> fileNameList; // flag file names
-    private List<String> quizCountriesList; // countries in current quiz
-    private Set<String> regionsSet; // world regions in current quiz
-    private String correctAnswer; // correct country for the current flag
-    private int totalGuesses; // number of guesses made
-    private int correctAnswers; // number of correct guesses
     private int guessRows; // number of rows displaying guess Buttons
-    private SecureRandom random; // used to randomize the quiz
     private Handler handler; // used to delay loading next flag
-    private Animation shakeAnimation; // animation for incorrect guess
-
-    private TextView questionNumberTextView; // shows current question #
-    private ImageView flagImageView; // displays a flag
     private LinearLayout[] guessLinearLayouts; // rows of answer Buttons
-    private TextView answerTextView; // displays Correct! or Incorrect!
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View view =
-                inflater.inflate(R.layout.fragment_game, container, false);
-
-        fileNameList = new ArrayList<String>();
-        quizCountriesList = new ArrayList<String>();
-        random = new SecureRandom();
+        View view = inflater.inflate(R.layout.fragment_game, container, false);
+        System.out.println("onCreateView");
         handler = new Handler();
-
-        // load the shake animation that's used for incorrect answers
-        shakeAnimation = AnimationUtils.loadAnimation(getActivity(),
-                R.anim.incorrect_shake);
-        shakeAnimation.setRepeatCount(3); // animation repeats 3 times
-
-        // get references to GUI components
-//        questionNumberTextView =
-//                (TextView) view.findViewById(R.id.questionNumberTextView);
-//        flagImageView = (ImageView) view.findViewById(R.id.flagImageView);
         guessLinearLayouts = new LinearLayout[3];
-        guessLinearLayouts[0] =
-                (LinearLayout) view.findViewById(R.id.row1LinearLayout);
-        guessLinearLayouts[1] =
-                (LinearLayout) view.findViewById(R.id.row2LinearLayout);
-        guessLinearLayouts[2] =
-                (LinearLayout) view.findViewById(R.id.row3LinearLayout);
-//        answerTextView = (TextView) view.findViewById(R.id.answerTextView);
-
+        guessLinearLayouts[0] = (LinearLayout) view.findViewById(R.id.row1LinearLayout);
+        guessLinearLayouts[1] = (LinearLayout) view.findViewById(R.id.row2LinearLayout);
+        guessLinearLayouts[2] = (LinearLayout) view.findViewById(R.id.row3LinearLayout);
         // configure listeners for the guess Buttons
-        for (LinearLayout row : guessLinearLayouts)
-        {
-            for (int column = 0; column < row.getChildCount(); column++)
-            {
+        int numberRow = 0;
+        for (LinearLayout row : guessLinearLayouts) {
+            for (int column = 0; column < row.getChildCount(); column++) {
                 Button button = (Button) row.getChildAt(column);
+                System.out.println("number");
+                System.out.println(numberRow * 3 + column + 1);
                 button.setText("2");
                 button.setOnClickListener(guessButtonListener);
+
             }
+            numberRow++;
         }
+        Button buttonReset = view.findViewById(R.id.buttonRePlay);
+        buttonReset.setOnClickListener(resetButtonListener);
         return view; // returns the fragment's view for display
     }
 
-    private View.OnClickListener guessButtonListener = new View.OnClickListener()
-    {
+    private  View.OnClickListener resetButtonListener = new View.OnClickListener() {
         @Override
-        public void onClick(View v)
-        {
+        public void onClick(View view) {
+            resetGame();
+        }
+    };
+    private View.OnClickListener guessButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            System.out.println("OnClickListener");
             Button guessButton = ((Button) v);
             String guess = guessButton.getText().toString();
-            System.out.println("giá trị button");
-            System.out.println(guess);
-////            String answer = getCountryName(correctAnswer);
-//            ++totalGuesses; // increment number of guesses the user has made
-//
-//            if (guess.equals(1)) // if the guess is correct
-//            {
-//                ++correctAnswers; // increment the number of correct answers
-//
-//                // display correct answer in green text
-////                answerTextView.setText(answer + "!");
-////                answerTextView.setTextColor(
-////                        getResources().getColor(R.color.correct_answer));
-//
-//                disableButtons(); // disable all guess Buttons
-//
-//                // if the user has correctly identified FLAGS_IN_QUIZ flags
-//                if (correctAnswers == FLAGS_IN_QUIZ)
-//                {
-//                    new AlertDialog.Builder(getActivity()).setMessage(getString(R.string.results,totalGuesses,(1000/(double) totalGuesses)))
-//                            .setPositiveButton(R.string.reset_quiz, ((dialog, which) -> resetQuiz())).show();
-//                }
-//                else // answer is correct but quiz is not over
-//                {
-//                    // load the next flag after a 1-second delay
-//                    handler.postDelayed(
-//                            new Runnable()
-//                            {
-//                                @Override
-//                                public void run()
-//                                {
-////                                    loadNextFlag();
-//                                    System.out.println("next question");
-//                                }
-//                            }, 2000); // 2000 milliseconds for 2-second delay
-//                }
-//            }
-//            else // guess was incorrect
-//            {
-//                flagImageView.startAnimation(shakeAnimation); // play shake
-//            }
+            if (guess != "") {
+                return;
+            }
+            // Lấy ID dạng int
+            int buttonIdInt = guessButton.getId();
+            // Chuyển đổi ID từ int sang tên tài nguyên dạng String
+            String buttonIdString = "";
+            try {
+                buttonIdString = getResources().getResourceEntryName(buttonIdInt);
+            } catch (android.content.res.Resources.NotFoundException e) {
+                // Xử lý trường hợp không tìm thấy tài nguyên với ID này (ít xảy ra với ID từ XML)
+                e.printStackTrace();
+                buttonIdString = "ID không tìm thấy hoặc không hợp lệ";
+            }
+            String numberString = buttonIdString.substring("button".length());
+            int valueNumber = numberList.get(Integer.parseInt(numberString) - 1);
+            String valueString = String.valueOf(valueNumber);
+            guessButton.setText(valueString);
+            
+            setEnableBox(false);
+
+            int numberBoxOpen = getBoxOpen();
+            if (numberBoxOpen == numberList.toArray().length) {
+                new AlertDialog.Builder(getActivity()).setMessage(getString(R.string.results))
+                        .setPositiveButton(R.string.reset_quiz, ((dialog, which) -> resetGame())).show();
+            }
+
+            if (numberBoxOpen != valueNumber) {
+                // close box
+                handler.postDelayed(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                closeBox();
+                                setEnableBox(true);
+                            }
+                        }, 500);
+
+            }
+            handler.postDelayed(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            setEnableBox(true);
+                        }
+                    }, 500);
         } // end method onClick
     }; // end answerButtonListener
 
+    // get số bài đã mở
+    private int getBoxOpen() {
+        int totalBoxOpen = 0;
+        for (int row = 0; row < guessRows; row++) {
+            // place Buttons in currentTableRow
+            for (int column = 0; column < guessLinearLayouts[row].getChildCount(); column++) {
+                // get reference to Button to configure
+                Button newGuessButton = (Button) guessLinearLayouts[row].getChildAt(column);
+                String valueBox = newGuessButton.getText().toString();
+                if (valueBox != "") totalBoxOpen++;
+            }
+        }
+        return totalBoxOpen;
+    }
 
     // update guessRows based on value in SharedPreferences
-    public void updateGuessRows(SharedPreferences sharedPreferences)
-    {
-        // get the number of guess buttons that should be displayed
-        String choices =
-                sharedPreferences.getString(MainActivity.CHOICES, null);
-        //set data
+    public void updateGuessRows(SharedPreferences sharedPreferences) {
+        System.out.println("updateGuessRows");
+        String choices = sharedPreferences.getString(MainActivity.CHOICES, null);
         guessRows = Integer.parseInt(choices) / 3;
-
-        // hide all guess button LinearLayouts
+        numberList = genNumberList(Integer.parseInt(choices));
         for (LinearLayout layout : guessLinearLayouts)
             layout.setVisibility(View.INVISIBLE);
-
-        // display appropriate guess button LinearLayouts
         for (int row = 0; row < guessRows; row++)
             guessLinearLayouts[row].setVisibility(View.VISIBLE);
     }
 
+    public void resetGame() {
+        numberList = genNumberList((guessRows * 3));
+        // add 3, 6, or 9 guess Buttons based on the value of guessRows
+        closeBox();
+    }
 
-    // set up and start the next quiz
-    public void resetGame()
-    {
-        // use AssetManager to get image file names for enabled regions
-        AssetManager assets = getActivity().getAssets();
-        fileNameList.clear(); // empty list of image file names
-//
-//        correctAnswers = 0; // reset the number of correct answers made
-//        totalGuesses = 0; // reset the total number of guesses the user made
-        quizCountriesList.clear(); // clear prior list of quiz countries
-//
-//        int flagCounter = 1;
-//        int numberOfFlags = fileNameList.size();
-//
-//        // add FLAGS_IN_QUIZ random file names to the quizCountriesList
+    private void closeBox() {
+        for (int row = 0; row < guessRows; row++) {
+            // place Buttons in currentTableRow
+            for (int column = 0; column < guessLinearLayouts[row].getChildCount(); column++) {
+                // get reference to Button to configure
+                Button newGuessButton = (Button) guessLinearLayouts[row].getChildAt(column);
+                newGuessButton.setEnabled(true);
+                // set Number into button
+                newGuessButton.setText("");
+            }
+        }
+    }
+    private void setEnableBox(boolean status){
+        for (int row = 0; row < guessRows; row++) {
+            // place Buttons in currentTableRow
+            for (int column = 0; column < guessLinearLayouts[row].getChildCount(); column++) {
+                // get reference to Button to configure
+                Button newGuessButton = (Button) guessLinearLayouts[row].getChildAt(column);
+                newGuessButton.setClickable(status);
+            }
+        }
+    }
 
-//        loadNextFlag(); // start the quiz by loading the first flag
+    public List<Integer> genNumberList(int total) {
+        List<Integer> numbers = new ArrayList<>();
+        // Add numbers from 1 to total to the list
+        for (int i = 1; i <= total; i++) {
+            numbers.add(i);
+        }
 
-    } // end method reset_quiz
+        // Shuffle the list
+        Collections.shuffle(numbers); // Uses a default random source
+        // If you need a specific seed for reproducibility, you can use:
+        // Collections.shuffle(numbers, new Random(someSeed));
 
-
-
-//    private void disableButtons()
-//    {
-//        for (int row = 0; row < guessRows; row++)
-//        {
-//            LinearLayout guessRow = guessLinearLayouts[row];
-//            for (int i = 0; i < guessRow.getChildCount(); i++)
-//                guessRow.getChildAt(i).setEnabled(false);
-//        }
-//    }
+        return numbers;
+    }
 }
