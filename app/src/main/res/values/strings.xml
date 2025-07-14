@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Trò chơi tìm số</string>
+    <string name="time">Thời gian: 00:00</string>
+    <string name="buttonRePlay">Chơi lại</string>
+    <string name="number_of_choices">Cấp độ</string>
+    <string name="number_of_choices_description">Hiện thị 3 ,6, 9 số</string>
+    <string name="action_settings">Cài đặt</string>
+    <string name="settings_activity">Cài đặt trò chơi</string>
+    <string name="restarting_quiz">Bắt đầu lại trò chơi</string>
+    <string name="reset_quiz">Reset Quiz</string>
+    <string name="results">%1$d guesses, %2$.02f%% correct</string>
+</resources>
