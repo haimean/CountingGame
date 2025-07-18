@@ -28,7 +28,7 @@ public class GameFragment extends Fragment {
     private TextView timerTextView;
     private long startTime;
     private long totalSecondsElapsed = 0;
-
+    private int TIME_LOAD =200;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -41,29 +41,26 @@ public class GameFragment extends Fragment {
         guessLinearLayouts[1] = (LinearLayout) view.findViewById(R.id.row2LinearLayout);
         guessLinearLayouts[2] = (LinearLayout) view.findViewById(R.id.row3LinearLayout);
         // configure listeners for the guess Buttons
-        int numberRow = 0;
         for (LinearLayout row : guessLinearLayouts) {
             for (int column = 0; column < row.getChildCount(); column++) {
                 Button button = (Button) row.getChildAt(column);
-                System.out.println("number");
-                System.out.println(numberRow * 3 + column + 1);
-                button.setText("2");
                 button.setOnClickListener(guessButtonListener);
-
             }
-            numberRow++;
         }
         Button buttonReset = view.findViewById(R.id.buttonRePlay);
         buttonReset.setOnClickListener(resetButtonListener);
         return view; // returns the fragment's view for display
     }
 
+    // press button choi lai
     private View.OnClickListener resetButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             resetGame();
         }
     };
+
+    // press button number
     private View.OnClickListener guessButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -73,16 +70,12 @@ public class GameFragment extends Fragment {
             if (guess != "") {
                 return;
             }
-            // Lấy ID dạng int
             int buttonIdInt = guessButton.getId();
-            // Chuyển đổi ID từ int sang tên tài nguyên dạng String
             String buttonIdString = "";
             try {
                 buttonIdString = getResources().getResourceEntryName(buttonIdInt);
             } catch (android.content.res.Resources.NotFoundException e) {
-                // Xử lý trường hợp không tìm thấy tài nguyên với ID này (ít xảy ra với ID từ XML)
                 e.printStackTrace();
-                buttonIdString = "ID không tìm thấy hoặc không hợp lệ";
             }
             String numberString = buttonIdString.substring("button".length());
             int valueNumber = numberList.get(Integer.parseInt(numberString) - 1);
@@ -93,7 +86,7 @@ public class GameFragment extends Fragment {
 
             int numberBoxOpen = getBoxOpen();
             if (numberBoxOpen == numberList.toArray().length) {
-                handler.removeCallbacks(timerRunnable); // Dừng Runnable
+                handler.removeCallbacks(timerRunnable);
                 String message = getString(R.string.results, totalSecondsElapsed);
 
                 new AlertDialog.Builder(getActivity()).setMessage(message)
@@ -118,7 +111,7 @@ public class GameFragment extends Fragment {
                         public void run() {
                             setEnableBox(true);
                         }
-                    }, 500);
+                    }, TIME_LOAD);
         } // end method onClick
     }; // end answerButtonListener
 
@@ -137,7 +130,7 @@ public class GameFragment extends Fragment {
         return totalBoxOpen;
     }
 
-    // update guessRows based on value in SharedPreferences
+    // onChange when change total number
     public void updateGuessRows(SharedPreferences sharedPreferences) {
         System.out.println("updateGuessRows");
         String choices = sharedPreferences.getString(MainActivity.CHOICES, null);
@@ -149,14 +142,16 @@ public class GameFragment extends Fragment {
             guessLinearLayouts[row].setVisibility(View.VISIBLE);
     }
 
+    // reset game
     public void resetGame() {
         numberList = genNumberList((guessRows * 3));
         closeBox();
-        startTime = System.currentTimeMillis(); // Ghi lại thời gian bắt đầu
-        handler.postDelayed(timerRunnable, 0); // Bắt đầu chạy ngay lập tức
+        startTime = System.currentTimeMillis();
+        handler.postDelayed(timerRunnable, 0);
         timerTextView.setText("00:00");
     }
 
+    // close all Box
     private void closeBox() {
         for (int row = 0; row < guessRows; row++) {
             // place Buttons in currentTableRow
@@ -170,7 +165,7 @@ public class GameFragment extends Fragment {
         }
     }
 
-    // Runnable để cập nhật UI mỗi giây
+    // Runnable để cập nhật time mỗi giây
     private Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -187,6 +182,7 @@ public class GameFragment extends Fragment {
         }
     };
 
+    // set can click box
     private void setEnableBox(boolean status) {
         for (int row = 0; row < guessRows; row++) {
             // place Buttons in currentTableRow
@@ -204,12 +200,8 @@ public class GameFragment extends Fragment {
         for (int i = 1; i <= total; i++) {
             numbers.add(i);
         }
-
-        // Shuffle the list
-        Collections.shuffle(numbers); // Uses a default random source
-        // If you need a specific seed for reproducibility, you can use:
-        // Collections.shuffle(numbers, new Random(someSeed));
-
+        // random list number
+        Collections.shuffle(numbers);
         return numbers;
     }
 }
